@@ -2,7 +2,7 @@
 
 **Unified MCP server for AI environmental awareness.**
 
-One binary. 142 tools. Your AI shouldn't be trapped in a tab.
+One binary. 150 tools. Your AI shouldn't be trapped in a tab.
 
 ```bash
 cargo install rmcp-presence --features full
@@ -24,18 +24,19 @@ Three layers, conditionally compiled:
 ```
 +----------------------------------------------------------+
 |                     rmcp-presence                         |
-|              (single binary, 12MB)                        |
+|              (single binary, 13MB)                        |
 +----------------------------------------------------------+
 |  Layer 3: Linux        |  83 tools - Linux only          |
 |  (conditional)         |  i3, xdotool, mpris, systemd,   |
 |                        |  brightness, bluer, dbus,       |
 |                        |  logind, pulseaudio             |
 +----------------------------------------------------------+
-|  Layer 2: Actuators    |  31 tools - Cross-platform      |
+|  Layer 2: Actuators    |  38 tools - Cross-platform      |
 |  (all platforms)       |  clipboard, audio, trash, open, |
-|                        |  screenshot, ollama, breakrs    |
+|                        |  screenshot, ollama, breakrs,   |
+|                        |  camera, microphone             |
 +----------------------------------------------------------+
-|  Layer 1: Sensors      |  28 tools - Cross-platform      |
+|  Layer 1: Sensors      |  29 tools - Cross-platform      |
 |  (all platforms)       |  sysinfo, display, idle, git,   |
 |                        |  network, usb, battery, weather |
 +----------------------------------------------------------+
@@ -45,16 +46,16 @@ Three layers, conditionally compiled:
 
 | Platform | Layers | Tools |
 |----------|--------|-------|
-| macOS    | 1 + 2  | 59    |
-| Windows  | 1 + 2  | 59    |
-| Linux    | 1 + 2 + 3 | **142** |
+| macOS    | 1 + 2  | 67    |
+| Windows  | 1 + 2  | 67    |
+| Linux    | 1 + 2 + 3 | **150** |
 
 ## Feature Flags
 
 ```toml
 [features]
-sensors = [...]     # Layer 1: 28 cross-platform read-only tools
-actuators = [...]   # Layer 2: 31 cross-platform action tools
+sensors = [...]     # Layer 1: 29 cross-platform read-only tools
+actuators = [...]   # Layer 2: 38 cross-platform action tools
 linux = [...]       # Layer 3: 83 Linux-specific tools
 full = ["sensors", "actuators", "linux"]
 ```
@@ -84,13 +85,38 @@ Add to `~/.claude.json`:
 mcp__presence__get_system_info     - CPU, memory, disk, uptime
 mcp__presence__get_weather         - Current weather for location
 mcp__presence__capture_monitor     - Screenshot a display
+mcp__presence__capture_camera      - Photo from webcam
+mcp__presence__capture_audio       - Record from microphone
 mcp__presence__set_volume          - System volume control
 mcp__presence__get_now_playing     - Current media track (Linux)
 mcp__presence__suspend             - Suspend the system (Linux)
 mcp__presence__exec                - Launch applications (Linux)
 ```
 
-## Layer 1: Sensors (28 tools)
+## Configuration
+
+Disable tools at runtime without recompiling. Create a config file:
+
+```bash
+cp tools.toml.example ~/.config/rmcp-presence/tools.toml
+```
+
+Edit `~/.config/rmcp-presence/tools.toml`:
+
+```toml
+# Add tool names to disable them
+disabled = [
+  "poweroff",
+  "reboot",
+  "capture_audio",
+]
+```
+
+On startup, disabled tools are removed and won't appear in the tool list.
+
+**No config file?** All tools enabled by default. Zero friction.
+
+## Layer 1: Sensors (29 tools)
 
 Cross-platform read-only environmental awareness.
 
@@ -99,14 +125,14 @@ Cross-platform read-only environmental awareness.
 | sysinfo | get_system_info, get_disk_info, get_top_processes, get_process_details, find_process, list_processes, get_component_temps, get_network_stats, get_users |
 | display | get_display_info, get_display_by_name, get_display_at_point |
 | idle | get_idle_time, is_idle_for |
-| network | get_interfaces |
+| network | get_interfaces, get_public_ip |
 | usb | get_usb_devices |
 | battery | get_battery_status |
 | bluetooth | scan_ble_devices |
 | git | get_status, get_log, get_branches, get_remotes, get_tags, get_stash_list, get_diff_summary, get_current_branch |
 | weather | get_weather, get_forecast |
 
-## Layer 2: Actuators (31 tools)
+## Layer 2: Actuators (38 tools)
 
 Cross-platform actions.
 
@@ -117,6 +143,8 @@ Cross-platform actions.
 | trash | trash_file, trash_files, list_trash, restore_from_trash, empty_trash |
 | open | open_path, open_with |
 | screenshot | list_monitors, capture_monitor, list_windows, capture_window, capture_region |
+| camera | list_cameras, capture_camera, get_camera_info |
+| microphone | list_microphones, get_microphone_info, capture_audio, get_input_level |
 | ollama | list_models, list_running, show_model, pull_model, delete_model |
 | breakrs | set_reminder, list_reminders, remove_reminder, clear_reminders, daemon_status, get_history |
 
