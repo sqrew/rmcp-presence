@@ -1,0 +1,102 @@
+[package]
+name = "rmcp-presence"
+version = "0.1.0"
+edition = "2021"
+description = "Unified MCP server for AI environmental awareness - 141 tools in one binary"
+license = "MIT"
+repository = "https://github.com/sqrew/rmcp-presence"
+keywords = ["mcp", "ai", "presence", "sensors", "rmcp"]
+categories = ["api-bindings"]
+
+[features]
+default = ["sensors", "actuators"]
+
+# Layer features
+sensors = [
+    "dep:sysinfo",
+    "dep:display-info",
+    "dep:user-idle",
+    "dep:network-interface",
+    "dep:nusb",
+    "dep:battery",
+    "dep:btleplug",
+    "dep:git2",
+    "dep:reqwest",
+    "dep:chrono",
+    "dep:urlencoding",
+]
+
+actuators = [
+    "dep:arboard",
+    "dep:cpvc",
+    "dep:trash",
+    "dep:open",
+    "dep:xcap",
+    "dep:image",
+    "dep:base64",
+]
+
+linux = [
+    "dep:tokio-i3ipc",
+    "dep:mpris",
+    "dep:zbus",
+    "dep:zbus_systemd",
+    "dep:brightness",
+    "dep:bluer",
+    "dep:pulsectl-rs",
+    "dep:futures",
+    "dep:thiserror",
+]
+
+# Meta feature
+full = ["sensors", "actuators", "linux"]
+
+[dependencies]
+# Core (always included)
+rmcp = { version = "0.12", features = ["server", "transport-io"] }
+tokio = { version = "1", features = ["full"] }
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+schemars = "1.0"
+anyhow = "1.0"
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter"] }
+
+# Sensors (feature-gated)
+sysinfo = { version = "0.33", optional = true }
+display-info = { version = "0.5", optional = true }
+user-idle = { version = "0.6", optional = true }
+network-interface = { version = "2", optional = true }
+nusb = { version = "0.1", optional = true }
+battery = { version = "0.7", optional = true }
+btleplug = { version = "0.11", optional = true }
+git2 = { version = "0.20", optional = true }
+reqwest = { version = "0.12", features = ["json"], optional = true }
+chrono = { version = "0.4", optional = true }
+urlencoding = { version = "2", optional = true }
+
+# Actuators (feature-gated)
+arboard = { version = "3", optional = true }
+cpvc = { version = "0.5", optional = true }
+trash = { version = "5", optional = true }
+open = { version = "5", optional = true }
+xcap = { version = "0.2", optional = true }
+image = { version = "0.25", optional = true }
+base64 = { version = "0.22", optional = true }
+
+# Linux (feature-gated) - these are Linux-only crates
+tokio-i3ipc = { version = "0.16", optional = true }
+mpris = { version = "2.0", optional = true }
+zbus = { version = "5", optional = true }
+zbus_systemd = { version = "0.25900", features = ["login1", "systemd1"], optional = true }
+brightness = { version = "0.5", optional = true }
+bluer = { version = "0.17", features = ["full"], optional = true }
+pulsectl-rs = { version = "0.3", optional = true }
+futures = { version = "0.3", optional = true }
+thiserror = { version = "2.0", optional = true }
+
+[profile.release]
+lto = true
+codegen-units = 1
+panic = "abort"
+strip = true
