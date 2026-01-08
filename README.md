@@ -2,7 +2,7 @@
 
 **Unified MCP server for AI environmental awareness.**
 
-One binary. 143 tools. Your AI shouldn't be trapped in a tab.
+One binary. 142 tools. Your AI shouldn't be trapped in a tab.
 
 ```bash
 cargo install rmcp-presence --features full
@@ -46,8 +46,8 @@ Three layers, conditionally compiled:
 | Platform | Layers | Tools |
 |----------|--------|-------|
 | macOS    | 1 + 2  | 59    |
-| Windows  | 1 + 2 + brightness | 62 |
-| Linux    | 1 + 2 + 3 | **143** |
+| Windows  | 1 + 2  | 59    |
+| Linux    | 1 + 2 + 3 | **142** |
 
 ## Feature Flags
 
