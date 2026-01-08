@@ -19,6 +19,8 @@ use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt, EnvFilte
 
 // === Modules ===
 
+mod config;
+
 #[cfg(feature = "sensors")]
 mod sensors;
 
@@ -52,8 +54,31 @@ impl Default for PresenceServer {
 
 impl PresenceServer {
     pub fn new() -> Self {
+        let mut tool_router = Self::tool_router();
+
+        // Load config and filter disabled tools
+        let config = config::Config::load();
+        let disabled_count = config.disabled.len();
+
+        for tool_name in &config.disabled {
+            if tool_router.has_route(tool_name) {
+                tool_router.remove_route(tool_name);
+                tracing::info!("Disabled tool: {}", tool_name);
+            } else {
+                tracing::warn!("Config disables unknown tool: {}", tool_name);
+            }
+        }
+
+        if disabled_count > 0 {
+            tracing::info!(
+                "Loaded config: {} tools disabled, {} tools active",
+                disabled_count,
+                tool_router.map.len()
+            );
+        }
+
         Self {
-            tool_router: Self::tool_router(),
+            tool_router,
             #[cfg(feature = "sensors")]
             http_client: reqwest::Client::new(),
         }
