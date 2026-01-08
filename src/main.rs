@@ -193,6 +193,15 @@ impl PresenceServer {
     }
 
     #[cfg(feature = "sensors")]
+    #[rmcp::tool(description = "Get public IP address and geolocation info (city, region, country, ISP, timezone)")]
+    pub async fn get_public_ip(
+        &self,
+        Parameters(_params): Parameters<EmptyParams>,
+    ) -> Result<CallToolResult, McpError> {
+        sensors::network::get_public_ip().await
+    }
+
+    #[cfg(feature = "sensors")]
     #[rmcp::tool(description = "List all connected USB devices with vendor/product info")]
     pub async fn get_usb_devices(
         &self,
@@ -500,6 +509,73 @@ impl PresenceServer {
         Parameters(params): Parameters<actuators::screenshot::CaptureRegionParams>,
     ) -> Result<CallToolResult, McpError> {
         actuators::screenshot::capture_region(params).await
+    }
+
+    // === Camera Tools ===
+
+    #[cfg(feature = "actuators")]
+    #[rmcp::tool(description = "List all available cameras/webcams on the system")]
+    pub async fn list_cameras(
+        &self,
+        Parameters(_params): Parameters<EmptyParams>,
+    ) -> Result<CallToolResult, McpError> {
+        actuators::camera::list_cameras().await
+    }
+
+    #[cfg(feature = "actuators")]
+    #[rmcp::tool(description = "Capture a photo from a camera. Returns base64 encoded JPEG.")]
+    pub async fn capture_camera(
+        &self,
+        Parameters(params): Parameters<actuators::camera::CaptureParams>,
+    ) -> Result<CallToolResult, McpError> {
+        actuators::camera::capture_camera(params).await
+    }
+
+    #[cfg(feature = "actuators")]
+    #[rmcp::tool(description = "Get detailed information about a specific camera")]
+    pub async fn get_camera_info(
+        &self,
+        Parameters(params): Parameters<actuators::camera::CameraIndexParams>,
+    ) -> Result<CallToolResult, McpError> {
+        actuators::camera::get_camera_info(params).await
+    }
+
+    // === Microphone Tools ===
+
+    #[cfg(feature = "actuators")]
+    #[rmcp::tool(description = "List all available microphones/input devices on the system")]
+    pub async fn list_microphones(
+        &self,
+        Parameters(_params): Parameters<EmptyParams>,
+    ) -> Result<CallToolResult, McpError> {
+        actuators::microphone::list_microphones().await
+    }
+
+    #[cfg(feature = "actuators")]
+    #[rmcp::tool(description = "Get detailed information about a specific microphone")]
+    pub async fn get_microphone_info(
+        &self,
+        Parameters(params): Parameters<actuators::microphone::MicrophoneIndexParams>,
+    ) -> Result<CallToolResult, McpError> {
+        actuators::microphone::get_microphone_info(params).await
+    }
+
+    #[cfg(feature = "actuators")]
+    #[rmcp::tool(description = "Record audio from a microphone. Returns base64 encoded WAV.")]
+    pub async fn capture_audio(
+        &self,
+        Parameters(params): Parameters<actuators::microphone::CaptureParams>,
+    ) -> Result<CallToolResult, McpError> {
+        actuators::microphone::capture_audio(params).await
+    }
+
+    #[cfg(feature = "actuators")]
+    #[rmcp::tool(description = "Get current audio input level (0.0-1.0). Useful for voice activity detection.")]
+    pub async fn get_input_level(
+        &self,
+        Parameters(params): Parameters<actuators::microphone::LevelParams>,
+    ) -> Result<CallToolResult, McpError> {
+        actuators::microphone::get_input_level(params).await
     }
 
     #[cfg(feature = "actuators")]
@@ -1111,7 +1187,7 @@ impl ServerHandler for PresenceServer {
         description.push_str("- sensors: system, display, idle, network, usb, battery, bluetooth, git, weather\n");
 
         #[cfg(feature = "actuators")]
-        description.push_str("- actuators: clipboard, audio, trash, open, screenshot, ollama\n");
+        description.push_str("- actuators: clipboard, audio, trash, open, screenshot, ollama, camera, microphone\n");
 
         #[cfg(all(feature = "linux", target_os = "linux"))]
         description.push_str("- linux: i3, xdotool, mpris, systemd, brightness, bluer, dbus, logind, pulseaudio\n");

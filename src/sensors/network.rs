@@ -3,6 +3,29 @@
 use crate::shared::internal_error;
 use network_interface::{Addr, NetworkInterface, NetworkInterfaceConfig};
 use rmcp::{model::*, ErrorData as McpError};
+use serde::{Deserialize, Serialize};
+
+/// Response from ipinfo.io
+#[derive(Debug, Deserialize, Serialize)]
+pub struct IpInfo {
+    pub ip: String,
+    #[serde(default)]
+    pub hostname: Option<String>,
+    #[serde(default)]
+    pub city: Option<String>,
+    #[serde(default)]
+    pub region: Option<String>,
+    #[serde(default)]
+    pub country: Option<String>,
+    #[serde(default)]
+    pub loc: Option<String>,
+    #[serde(default)]
+    pub org: Option<String>,
+    #[serde(default)]
+    pub postal: Option<String>,
+    #[serde(default)]
+    pub timezone: Option<String>,
+}
 
 // === Tool Functions ===
 
@@ -61,4 +84,24 @@ pub async fn get_interfaces() -> Result<CallToolResult, McpError> {
     }
 
     Ok(CallToolResult::success(vec![Content::text(result)]))
+}
+
+/// Get public IP address and geolocation info from ipinfo.io
+pub async fn get_public_ip() -> Result<CallToolResult, McpError> {
+    let client = reqwest::Client::new();
+
+    let info: IpInfo = client
+        .get("https://ipinfo.io/json")
+        .header("Accept", "application/json")
+        .send()
+        .await
+        .map_err(|e| internal_error(format!("Failed to fetch IP info: {}", e)))?
+        .json()
+        .await
+        .map_err(|e| internal_error(format!("Failed to parse IP info: {}", e)))?;
+
+    let json = serde_json::to_string_pretty(&info)
+        .map_err(|e| internal_error(format!("Serialization error: {}", e)))?;
+
+    Ok(CallToolResult::success(vec![Content::text(json)]))
 }

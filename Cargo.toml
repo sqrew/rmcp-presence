@@ -34,6 +34,9 @@ actuators = [
     "dep:xcap",
     "dep:image",
     "dep:base64",
+    "dep:nokhwa",
+    "dep:cpal",
+    "dep:hound",
 ]
 
 linux = [
@@ -83,6 +86,9 @@ open = { version = "5", optional = true }
 xcap = { version = "0.2", optional = true }
 image = { version = "0.25", optional = true }
 base64 = { version = "0.22", optional = true }
+nokhwa = { version = "0.10", features = ["input-native"], optional = true }
+cpal = { version = "0.15", optional = true }
+hound = { version = "3.5", optional = true }
 
 # Linux (feature-gated) - these are Linux-only crates
 tokio-i3ipc = { version = "0.16", optional = true }
