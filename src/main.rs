@@ -1,12 +1,13 @@
 //! rmcp-presence: Unified MCP server for AI environmental awareness
 //!
-//! One binary. 141 tools. Cross-platform base with Linux power features.
+//! One binary. 150 tools. Cross-platform base with Linux power features.
 //!
 //! Features:
-//! - sensors: System info, display, idle, network, USB, battery, bluetooth, git, weather (27 tools)
-//! - actuators: Clipboard, audio, trash, open, screenshot, ollama (31 tools)
+//! - sensors: System info, display, idle, network, USB, battery, bluetooth, git, weather (29 tools)
+//! - actuators: Clipboard, audio, trash, open, screenshot, camera, microphone, ollama (38 tools)
 //! - linux: i3, xdotool, mpris, systemd, brightness, bluer, dbus, logind, pulseaudio (83 tools)
 
+use clap::{Parser, Subcommand};
 use rmcp::{
     handler::server::{router::tool::ToolRouter, wrapper::Parameters, ServerHandler},
     model::*,
@@ -31,6 +32,22 @@ mod actuators;
 mod linux;
 
 mod shared;
+
+// === CLI ===
+
+#[derive(Parser)]
+#[command(name = "rmcp-presence")]
+#[command(about = "Unified MCP server for AI environmental awareness")]
+struct Cli {
+    #[command(subcommand)]
+    command: Option<Commands>,
+}
+
+#[derive(Subcommand)]
+enum Commands {
+    /// Open the config file in your editor to enable/disable tools
+    Config,
+}
 
 // === Common Parameter Types ===
 
@@ -1228,6 +1245,59 @@ impl ServerHandler for PresenceServer {
 
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
+    let cli = Cli::parse();
+
+    match cli.command {
+        Some(Commands::Config) => {
+            run_config_command()?;
+        }
+        None => {
+            run_server().await?;
+        }
+    }
+
+    Ok(())
+}
+
+/// Open config file in user's editor
+fn run_config_command() -> anyhow::Result<()> {
+    let config_path = config::Config::path()
+        .ok_or_else(|| anyhow::anyhow!("Could not determine config directory"))?;
+
+    // Create config dir if needed
+    if let Some(parent) = config_path.parent() {
+        std::fs::create_dir_all(parent)?;
+    }
+
+    // Create config file from template if it doesn't exist
+    if !config_path.exists() {
+        let template = include_str!("../tools.toml.example");
+        std::fs::write(&config_path, template)?;
+        println!("Created config file: {}", config_path.display());
+    }
+
+    // Get editor from environment or use defaults
+    let editor = std::env::var("EDITOR")
+        .or_else(|_| std::env::var("VISUAL"))
+        .unwrap_or_else(|_| {
+            #[cfg(target_os = "windows")]
+            { "notepad".to_string() }
+            #[cfg(not(target_os = "windows"))]
+            { "nano".to_string() }
+        });
+
+    println!("Opening {} with {}", config_path.display(), editor);
+
+    // Open editor
+    std::process::Command::new(&editor)
+        .arg(&config_path)
+        .status()?;
+
+    Ok(())
+}
+
+/// Run the MCP server
+async fn run_server() -> anyhow::Result<()> {
     tracing_subscriber::registry()
         .with(EnvFilter::try_from_default_env().unwrap_or_else(|_| EnvFilter::new("info")))
         .with(tracing_subscriber::fmt::layer().with_writer(std::io::stderr))

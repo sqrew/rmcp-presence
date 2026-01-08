@@ -95,11 +95,13 @@ mcp__presence__exec                - Launch applications (Linux)
 
 ## Configuration
 
-Disable tools at runtime without recompiling. Create a config file:
+Disable tools at runtime without recompiling.
 
 ```bash
-cp tools.toml.example ~/.config/rmcp-presence/tools.toml
+rmcp-presence config
 ```
+
+This creates the config file (if needed) and opens it in your `$EDITOR`.
 
 Edit `~/.config/rmcp-presence/tools.toml`:
 

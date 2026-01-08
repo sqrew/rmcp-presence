@@ -66,6 +66,7 @@ tracing = "0.1"
 tracing-subscriber = { version = "0.3", features = ["env-filter"] }
 dirs = "6"
 toml = "0.8"
+clap = { version = "4", features = ["derive"] }
 
 # Sensors (feature-gated)
 sysinfo = { version = "0.33", optional = true }
