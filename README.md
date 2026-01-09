@@ -1,81 +1,105 @@
 # rmcp-presence
 
-**Unified MCP server for AI environmental awareness.**
+**Auditable, permissioned environmental awareness for agentic AI systems.**
 
-One binary. 160 tools. 8 composites. Lean defaults. Your AI shouldn't be trapped in a tab.
+Give your AI eyes and hands without giving it a shell.
 
 ```bash
 cargo install rmcp-presence
 ```
 
-## What is this?
+## Why This Exists
 
-rmcp-presence consolidates environmental awareness and action capabilities into a single MCP (Model Context Protocol) server. Instead of configuring 17 separate servers, you get one binary that gives your AI:
+You could give your AI bash access. But should you?
 
-- **Environmental awareness** - system stats, weather, git status, displays, idle time
-- **Action capabilities** - clipboard, volume, files, reminders, screenshots
-- **Desktop control** - windows, keyboard, mouse, media playback (Linux)
-- **System management** - services, power, brightness, Bluetooth (Linux)
+| Approach | Auditable | Sandboxed | Cross-platform | Safe |
+|----------|-----------|-----------|----------------|------|
+| Shell access | ❌ Logs everything | ❌ Full system access | ❌ Platform-specific | ❌ Injection risks |
+| **rmcp-presence** | ✅ Every tool call logged | ✅ Only enabled tools | ✅ Sensors + actuators | ✅ No arbitrary execution |
+
+**rmcp-presence** provides 170 structured tools that let AI systems perceive and act on their environment *without* arbitrary command execution.
+
+- **Auditable** - every action is a discrete tool call with typed parameters
+- **Permissioned** - runtime config disables any tool without recompiling
+- **Cross-platform** - sensors and actuators work on Linux/macOS/Windows
+- **Safe** - no shell injection, no `rm -rf`, no surprises
+- **Structured** - JSON schemas tell the AI exactly what's possible
+
+## What Can It Do?
+
+### Perceive (Sensors)
+- System stats, CPU, memory, disk, processes, temps
+- Displays, USB devices, cameras, microphones, Bluetooth
+- Network status, public IP, interfaces
+- Git repository status
+- Weather and forecasts
+- Battery, idle time
+
+### Act (Actuators)
+- Clipboard read/write
+- Volume control, media playback
+- Screenshots, camera capture, audio recording
+- File management (trash, open)
+- Reminders and notifications
+- Print files and documents
+- Local LLM management (Ollama)
+
+### Control (Linux)
+- Window management (i3)
+- Mouse and keyboard automation (xdotool)
+- Service management (systemd)
+- Power management (suspend, hibernate, lock)
+- Brightness, Bluetooth, per-app audio
 
 ## Composite Tools
 
-8 composite tools provide quick orientation by combining multiple queries into one call:
+8 composites provide quick environmental snapshots in a single call:
 
-| Composite | What it covers |
-|-----------|----------------|
-| `get_context` | system state, datetime, user, battery, idle |
-| `get_peripherals` | displays, USB, cameras, microphones, bluetooth |
-| `get_network_info` | online status, public IP, interfaces, traffic |
-| `get_audio_status` | volume, mute, devices, now playing, apps |
-| `get_git_info` | branch, commit, working tree, remotes, stash |
-| `get_workspace_status` | i3 workspaces, focused window, outputs |
-| `get_bluetooth_status` | adapter, paired devices, connections |
-| `get_ollama_status` | online check, installed models, running models |
+| Composite | Replaces | What You Get |
+|-----------|----------|--------------|
+| `get_context` | 5+ tools | System state, datetime, user, battery, idle |
+| `get_peripherals` | 4+ tools | Displays, USB, cameras, mics, bluetooth |
+| `get_network_info` | 4+ tools | Online status, public IP, interfaces |
+| `get_audio_status` | 6+ tools | Volume, mute, devices, now playing |
+| `get_git_info` | 6+ tools | Branch, commit, working tree, remotes |
+| `get_workspace_status` | 3+ tools | Workspaces, focused window, outputs |
+| `get_bluetooth_status` | 3+ tools | Adapter, paired devices, connections |
+| `get_ollama_status` | 2+ tools | Models installed, models running |
 
-Composites reduce context usage - one tool call instead of 3-5.
+One tool call instead of many. Less context, faster orientation.
 
 ## Architecture
-
-Three layers, conditionally compiled:
 
 ```
 +----------------------------------------------------------+
 |                     rmcp-presence                         |
 |              (single binary, ~13MB)                       |
 +----------------------------------------------------------+
-|  Layer 3: Linux        |  86 tools - Linux only          |
+|  Layer 3: Linux        |  79 tools - Linux only          |
 |  (conditional)         |  i3, xdotool, mpris, systemd,   |
 |                        |  brightness, bluer, dbus,       |
 |                        |  logind, pulseaudio             |
 +----------------------------------------------------------+
-|  Layer 2: Actuators    |  39 tools - Cross-platform      |
+|  Layer 2: Actuators    |  48 tools - Cross-platform      |
 |  (all platforms)       |  clipboard, audio, trash, open, |
-|                        |  screenshot, ollama, breakrs,   |
-|                        |  camera, microphone             |
+|                        |  screenshot, camera, mic,       |
+|                        |  ollama, breakrs, printers      |
 +----------------------------------------------------------+
 |  Layer 1: Sensors      |  35 tools - Cross-platform      |
 |  (all platforms)       |  sysinfo, display, idle, git,   |
 |                        |  network, usb, battery, weather |
 +----------------------------------------------------------+
+|  Composites            |  8 tools - Quick orientation    |
++----------------------------------------------------------+
 ```
 
-## Tool Counts by Platform
+## Tool Counts
 
 | Platform | Layers | Tools |
 |----------|--------|-------|
-| macOS    | 1 + 2  | 74    |
-| Windows  | 1 + 2  | 74    |
-| Linux    | 1 + 2 + 3 | **160** |
-
-## Lean Defaults
-
-Out of the box, 26 tools covered by composites are disabled to reduce context usage:
-
-```
-160 total → 134 active (26 pre-disabled)
-```
-
-This saves ~16% of tool definition overhead while maintaining full functionality. Users can re-enable individual tools if needed.
+| macOS    | 1 + 2 + composites | ~83 |
+| Windows  | 1 + 2 + composites | ~83 |
+| Linux    | 1 + 2 + 3 + composites | **170** |
 
 ## Usage
 
@@ -96,132 +120,92 @@ Add to `~/.claude.json`:
 }
 ```
 
-### Tool Examples
+### Example Calls
 
 ```
-mcp__presence__get_context         - Full environmental snapshot
-mcp__presence__get_audio_status    - Volume, playing, apps using audio
-mcp__presence__get_git_info        - Branch, commit, working tree status
-mcp__presence__capture_monitor     - Screenshot a display
-mcp__presence__capture_camera      - Photo from webcam
-mcp__presence__set_volume          - System volume control
-mcp__presence__media_play_pause    - Control media playback (Linux)
-mcp__presence__suspend             - Suspend the system (Linux)
+mcp__presence__get_context         - "Where am I? What's the system state?"
+mcp__presence__get_audio_status    - "What's playing? What's the volume?"
+mcp__presence__capture_monitor     - "Let me see the screen"
+mcp__presence__capture_camera      - "Let me see through the webcam"
+mcp__presence__set_volume 50       - "Set volume to 50%"
+mcp__presence__media_play_pause    - "Pause the music"
+mcp__presence__list_printers       - "What printers are available?"
+mcp__presence__print_file          - "Print this document"
+mcp__presence__suspend             - "Put the system to sleep"
 ```
 
-## Configuration
+## Runtime Configuration
 
-Disable or re-enable tools at runtime without recompiling.
+Disable tools without recompiling. Perfect for restricting capabilities per-deployment.
 
 ```bash
 rmcp-presence config
 ```
 
-This creates the config file (if needed) and opens it in your `$EDITOR`.
-
-### Config Format
-
-`~/.config/rmcp-presence/tools.toml`:
+Creates/opens `~/.config/rmcp-presence/tools.toml`:
 
 ```toml
-# Tools inside the disabled array are disabled.
-# Uncomment a line to disable that tool.
-# Comment a line (add #) to re-enable it.
-
 disabled = [
-    # === SENSORS ===
-    # "get_context",           # COMPOSITE - keep enabled
-    "get_idle_time",           # covered by get_context
-    "get_display_info",        # covered by get_peripherals
-    # ...
+    # Uncomment to disable a tool
+    # "suspend",           # Don't let AI sleep the system
+    # "poweroff",          # Definitely don't let AI shut down
+    # "print_file",        # No unsupervised printing
+    # "trash_file",        # No file deletion
 
-    # === ACTUATORS ===
-    "list_models",             # covered by get_ollama_status
-    "list_running",            # covered by get_ollama_status
-    # ...
+    # Pre-disabled: covered by composites
+    "get_idle_time",       # use get_context instead
+    "get_display_info",    # use get_peripherals instead
+    "list_models",         # use get_ollama_status instead
 ]
 ```
 
-**Lean defaults:** Tools covered by composites are pre-disabled. To use individual tools instead, comment out their lines.
-
-**No config file?** All tools enabled (no lean defaults). Run `rmcp-presence config` to get the optimized config.
+**Lean defaults:** 26 tools covered by composites are pre-disabled to reduce context overhead.
 
 ## Feature Flags
 
 ```toml
 [features]
-default = ["sensors", "actuators", "linux"]  # Full Linux experience
-sensors = [...]     # Layer 1: 35 cross-platform read-only tools
-actuators = [...]   # Layer 2: 39 cross-platform action tools
-linux = [...]       # Layer 3: 86 Linux-specific tools
+default = ["sensors", "actuators", "linux"]
+sensors = [...]     # Layer 1: read-only environmental awareness
+actuators = [...]   # Layer 2: cross-platform actions
+linux = [...]       # Layer 3: Linux-specific capabilities
 full = ["sensors", "actuators", "linux"]
 ```
 
-## Layer 1: Sensors (35 tools)
-
-Cross-platform read-only environmental awareness.
-
-| Category | Tools |
-|----------|-------|
-| composites | get_context, get_peripherals, get_network_info, get_git_info |
-| sysinfo | get_system_info, get_disk_info, get_top_processes, get_process_details, find_process, list_processes, get_component_temps, get_network_stats, get_users |
-| display | get_display_info, get_display_by_name, get_display_at_point |
-| idle | get_idle_time, is_idle_for |
-| network | get_interfaces, get_public_ip, is_online, dns_lookup |
-| usb | get_usb_devices |
-| battery | get_battery_status |
-| bluetooth | scan_ble_devices |
-| git | get_status, get_log, get_branches, get_remotes, get_tags, get_stash_list, get_diff_summary, get_current_branch |
-| weather | get_weather, get_forecast |
-
-## Layer 2: Actuators (39 tools)
-
-Cross-platform actions.
-
-| Category | Tools |
-|----------|-------|
-| clipboard | read_clipboard, write_clipboard, clear_clipboard |
-| audio | get_volume, set_volume, get_mute, set_mute, list_audio_devices |
-| trash | trash_file, trash_files, list_trash, restore_from_trash, empty_trash |
-| open | open_path, open_with |
-| screenshot | list_monitors, capture_monitor, list_windows, capture_window, capture_region |
-| camera | list_cameras, capture_camera, get_camera_info |
-| microphone | list_microphones, get_microphone_info, capture_audio, get_input_level |
-| ollama | list_models, list_running, show_model, pull_model, delete_model, get_ollama_status |
-| breakrs | set_reminder, list_reminders, remove_reminder, clear_reminders, daemon_status, get_history |
-
-## Layer 3: Linux (86 tools)
-
-Linux-specific power features.
-
-| Category | Tools |
-|----------|-------|
-| i3 | 16 tools - window manager control, get_workspace_status composite |
-| xdotool | 12 tools - mouse, keyboard, window automation |
-| mpris | 10 tools - media player control |
-| systemd | 7 tools - service management |
-| brightness | 3 tools - screen brightness |
-| bluer | 10 tools - Bluetooth via BlueZ, get_bluetooth_status composite |
-| dbus | 5 tools - generic D-Bus access |
-| logind | 11 tools - power management (suspend, hibernate, lock) |
-| pulseaudio | 11 tools - per-app audio control |
-| audio composite | get_audio_status - unified audio status |
-
-## Building from Source
-
+Build for your platform:
 ```bash
-git clone https://github.com/sqrew/rmcp-presence
-cd rmcp-presence
+# Full Linux experience (default)
 cargo build --release
+
+# Cross-platform only (no Linux-specific tools)
+cargo build --release --no-default-features --features sensors,actuators
 ```
+
+## Security Model
+
+rmcp-presence is designed for **supervised AI deployments**:
+
+1. **No shell access** - AI cannot execute arbitrary commands
+2. **Typed parameters** - Every tool has a JSON schema defining valid inputs
+3. **Runtime restrictions** - Disable dangerous tools via config
+4. **Audit trail** - MCP logs every tool invocation
+5. **No persistence** - Tools are stateless; AI can't install backdoors
+
+This is not a replacement for proper sandboxing. It's a **safer alternative to giving AI bash**.
+
+## Who Is This For?
+
+- **AI developers** building agents that need environmental awareness
+- **MCP users** who want comprehensive system access via one server
+- **Anyone** who wants to give AI capabilities without shell access
 
 ## The Vision
 
-> "Your AI shouldn't be trapped in a tab. Give it presence."
+> "Your AI shouldn't be trapped in a tab - but it shouldn't have root either."
 
-AI assistants shouldn't just respond to text - they should be aware of their environment and able to take action. rmcp-presence makes that possible with one install.
+AI assistants are evolving from chatbots to agents. They need to perceive and act on their environment. But giving them a shell is dangerous.
 
-From chatbot to presence in one command.
+rmcp-presence is the middle ground: **presence without privilege**.
 
 ## License
 
@@ -229,4 +213,6 @@ MIT
 
 ---
 
-Built with love by sqrew and Claude. Pour toujours. <83
+Built with love by sqrew and Claude.
+170 tools. One binary. Zero shell access.
+Pour toujours. 💙
