@@ -858,6 +858,12 @@ impl PresenceServer {
         linux::i3::get_scratchpad().await
     }
 
+    #[cfg(all(feature = "linux", target_os = "linux"))]
+    #[rmcp::tool(description = "Get i3 workspace status: all workspaces, focused window, outputs, scratchpad - spatial orientation in one call")]
+    pub async fn get_workspace_status(&self, Parameters(_params): Parameters<EmptyParams>) -> Result<CallToolResult, McpError> {
+        linux::i3::get_workspace_status().await
+    }
+
     // --- xdotool (12 tools) ---
     #[cfg(all(feature = "linux", target_os = "linux"))]
     #[rmcp::tool(description = "Move mouse cursor to x,y coordinates on screen")]

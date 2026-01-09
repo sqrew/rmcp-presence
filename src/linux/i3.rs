@@ -324,6 +324,164 @@ pub async fn get_version() -> Result<CallToolResult, McpError> {
     Ok(CallToolResult::success(vec![Content::text(json)]))
 }
 
+// === Composite: get_workspace_status ===
+
+#[derive(Debug, serde::Serialize)]
+pub struct WorkspaceStatus {
+    pub workspaces: Vec<WorkspaceInfo>,
+    pub focused_window: Option<FocusedWindowInfo>,
+    pub outputs: Vec<OutputInfo>,
+    pub scratchpad_count: usize,
+}
+
+#[derive(Debug, serde::Serialize)]
+pub struct WorkspaceInfo {
+    pub num: i32,
+    pub name: String,
+    pub focused: bool,
+    pub visible: bool,
+    pub urgent: bool,
+    pub output: String,
+}
+
+#[derive(Debug, serde::Serialize)]
+pub struct FocusedWindowInfo {
+    pub id: i64,
+    pub name: Option<String>,
+    pub class: Option<String>,
+    pub instance: Option<String>,
+    pub workspace: Option<String>,
+}
+
+#[derive(Debug, serde::Serialize)]
+pub struct OutputInfo {
+    pub name: String,
+    pub active: bool,
+    pub current_workspace: Option<String>,
+    pub rect: Rect,
+}
+
+#[derive(Debug, serde::Serialize)]
+pub struct Rect {
+    pub x: i32,
+    pub y: i32,
+    pub width: i32,
+    pub height: i32,
+}
+
+pub async fn get_workspace_status() -> Result<CallToolResult, McpError> {
+    let mut conn = connect().await?;
+
+    // Get workspaces
+    let ws_reply = conn
+        .get_workspaces()
+        .await
+        .map_err(|e| internal_error(format!("Failed to get workspaces: {}", e)))?;
+
+    let workspaces: Vec<WorkspaceInfo> = ws_reply
+        .iter()
+        .map(|ws| WorkspaceInfo {
+            num: ws.num,
+            name: ws.name.clone(),
+            focused: ws.focused,
+            visible: ws.visible,
+            urgent: ws.urgent,
+            output: ws.output.clone(),
+        })
+        .collect();
+
+    // Get tree to find focused window and scratchpad
+    let tree = conn
+        .get_tree()
+        .await
+        .map_err(|e| internal_error(format!("Failed to get tree: {}", e)))?;
+
+    let focused_window = find_focused_window(&tree);
+    let scratchpad_count = count_scratchpad_windows(&tree);
+
+    // Get outputs
+    let outputs_reply = conn
+        .get_outputs()
+        .await
+        .map_err(|e| internal_error(format!("Failed to get outputs: {}", e)))?;
+
+    let outputs: Vec<OutputInfo> = outputs_reply
+        .iter()
+        .filter(|o| o.name != "xroot-0") // Filter out virtual root
+        .map(|o| OutputInfo {
+            name: o.name.clone(),
+            active: o.active,
+            current_workspace: o.current_workspace.clone(),
+            rect: Rect {
+                x: o.rect.x as i32,
+                y: o.rect.y as i32,
+                width: o.rect.width as i32,
+                height: o.rect.height as i32,
+            },
+        })
+        .collect();
+
+    let status = WorkspaceStatus {
+        workspaces,
+        focused_window,
+        outputs,
+        scratchpad_count,
+    };
+
+    let json = serde_json::to_string_pretty(&status)
+        .map_err(|e| internal_error(format!("Serialization error: {}", e)))?;
+
+    Ok(CallToolResult::success(vec![Content::text(json)]))
+}
+
+fn find_focused_window(node: &Node) -> Option<FocusedWindowInfo> {
+    if node.focused && node.window.is_some() {
+        let props = node.window_properties.as_ref();
+        return Some(FocusedWindowInfo {
+            id: node.id as i64,
+            name: node.name.clone(),
+            class: props.and_then(|p| p.class.clone()),
+            instance: props.and_then(|p| p.instance.clone()),
+            workspace: None, // Would need to track this through traversal
+        });
+    }
+
+    for child in &node.nodes {
+        if let Some(found) = find_focused_window(child) {
+            return Some(found);
+        }
+    }
+    for child in &node.floating_nodes {
+        if let Some(found) = find_focused_window(child) {
+            return Some(found);
+        }
+    }
+
+    None
+}
+
+fn count_scratchpad_windows(node: &Node) -> usize {
+    if node.name.as_deref() == Some("__i3_scratch") {
+        fn count_windows(n: &Node) -> usize {
+            let mut count = if n.window.is_some() { 1 } else { 0 };
+            for child in &n.nodes {
+                count += count_windows(child);
+            }
+            for child in &n.floating_nodes {
+                count += count_windows(child);
+            }
+            count
+        }
+        return count_windows(node);
+    }
+
+    let mut count = 0;
+    for child in &node.nodes {
+        count += count_scratchpad_windows(child);
+    }
+    count
+}
+
 pub async fn get_scratchpad() -> Result<CallToolResult, McpError> {
     let mut conn = connect().await?;
 

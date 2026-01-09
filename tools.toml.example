@@ -86,7 +86,7 @@ disabled = []
 # daemon_status
 # get_history
 
-# === LINUX: i3 (15 tools) ===
+# === LINUX: i3 (16 tools) ===
 # get_workspaces
 # get_tree
 # switch_workspace
@@ -102,6 +102,7 @@ disabled = []
 # get_binding_modes
 # get_version
 # get_scratchpad
+# get_workspace_status
 
 # === LINUX: xdotool (12 tools) ===
 # move_mouse
