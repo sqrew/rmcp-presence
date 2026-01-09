@@ -144,7 +144,7 @@ disabled = []
 # get_brightness
 # set_brightness
 
-# === LINUX: bluer (9 tools) ===
+# === LINUX: bluer (10 tools) ===
 # list_adapters
 # get_adapter_info
 # discover_devices
@@ -154,6 +154,7 @@ disabled = []
 # remove_device
 # connect_device
 # disconnect_device
+# get_bluetooth_status
 
 # === LINUX: dbus (5 tools) ===
 # list_names

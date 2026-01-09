@@ -444,6 +444,111 @@ pub async fn connect_device(params: DeviceParams) -> Result<CallToolResult, McpE
     }
 }
 
+// === Composite Types ===
+
+#[derive(Debug, serde::Serialize)]
+pub struct BluetoothStatus {
+    pub adapter: Option<AdapterStatus>,
+    pub devices: Vec<DeviceStatus>,
+    pub connected_count: usize,
+}
+
+#[derive(Debug, serde::Serialize)]
+pub struct AdapterStatus {
+    pub name: String,
+    pub address: String,
+    pub powered: bool,
+    pub discoverable: bool,
+    pub discovering: bool,
+}
+
+#[derive(Debug, serde::Serialize)]
+pub struct DeviceStatus {
+    pub address: String,
+    pub name: String,
+    pub paired: bool,
+    pub connected: bool,
+    pub trusted: bool,
+}
+
+// === Composite Function ===
+
+pub async fn get_bluetooth_status(params: AdapterParams) -> Result<CallToolResult, McpError> {
+    let session = match get_session().await {
+        Ok(s) => s,
+        Err(e) => return Ok(CallToolResult::success(vec![Content::text(format!(
+            "{{\"error\": \"{}\"}}",
+            e
+        ))])),
+    };
+
+    let adapter = match get_adapter(&session, params.adapter.as_deref()).await {
+        Ok(a) => a,
+        Err(e) => {
+            // No adapter available - return empty status
+            let status = BluetoothStatus {
+                adapter: None,
+                devices: vec![],
+                connected_count: 0,
+            };
+            return Ok(CallToolResult::success(vec![Content::text(
+                serde_json::to_string_pretty(&status).unwrap_or_else(|_| e),
+            )]));
+        }
+    };
+
+    // Build adapter info
+    let adapter_status = AdapterStatus {
+        name: adapter.name().to_string(),
+        address: adapter
+            .address()
+            .await
+            .map(|a| a.to_string())
+            .unwrap_or_else(|_| "unknown".into()),
+        powered: adapter.is_powered().await.unwrap_or(false),
+        discoverable: adapter.is_discoverable().await.unwrap_or(false),
+        discovering: adapter.is_discovering().await.unwrap_or(false),
+    };
+
+    // Build device list
+    let mut devices = Vec::new();
+    let mut connected_count = 0;
+
+    if let Ok(addresses) = adapter.device_addresses().await {
+        for addr in addresses {
+            if let Ok(device) = adapter.device(addr) {
+                let connected = device.is_connected().await.unwrap_or(false);
+                if connected {
+                    connected_count += 1;
+                }
+
+                devices.push(DeviceStatus {
+                    address: addr.to_string(),
+                    name: device
+                        .name()
+                        .await
+                        .ok()
+                        .flatten()
+                        .unwrap_or_else(|| "(unknown)".into()),
+                    paired: device.is_paired().await.unwrap_or(false),
+                    connected,
+                    trusted: device.is_trusted().await.unwrap_or(false),
+                });
+            }
+        }
+    }
+
+    let status = BluetoothStatus {
+        adapter: Some(adapter_status),
+        devices,
+        connected_count,
+    };
+
+    Ok(CallToolResult::success(vec![Content::text(
+        serde_json::to_string_pretty(&status).unwrap_or_else(|e| format!("{{\"error\": \"{}\"}}", e)),
+    )]))
+}
+
 pub async fn disconnect_device(params: DeviceParams) -> Result<CallToolResult, McpError> {
     let session = match get_session().await {
         Ok(s) => s,

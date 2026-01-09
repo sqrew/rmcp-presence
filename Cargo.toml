@@ -9,7 +9,7 @@ keywords = ["mcp", "ai", "presence", "sensors", "rmcp"]
 categories = ["api-bindings"]
 
 [features]
-default = ["sensors", "actuators"]
+default = ["sensors", "actuators", "linux"]
 
 # Layer features
 sensors = [

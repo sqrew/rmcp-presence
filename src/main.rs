@@ -1115,6 +1115,12 @@ impl PresenceServer {
         linux::bluer::disconnect_device(params).await
     }
 
+    #[cfg(all(feature = "linux", target_os = "linux"))]
+    #[rmcp::tool(description = "Get Bluetooth status: adapter info, known devices, connection state - all in one call")]
+    pub async fn get_bluetooth_status(&self, Parameters(params): Parameters<linux::bluer::AdapterParams>) -> Result<CallToolResult, McpError> {
+        linux::bluer::get_bluetooth_status(params).await
+    }
+
     // --- dbus (5 tools) ---
     #[cfg(all(feature = "linux", target_os = "linux"))]
     #[rmcp::tool(description = "List all available D-Bus service names on the bus")]
