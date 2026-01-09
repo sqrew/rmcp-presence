@@ -106,8 +106,27 @@ impl PresenceServer {
 #[rmcp::tool_router]
 impl PresenceServer {
     // ============================================================
-    // SENSORS (Layer 1) - 27 tools
+    // SENSORS (Layer 1) - 30 tools
     // ============================================================
+
+    #[cfg(feature = "sensors")]
+    #[rmcp::tool(description = "Get comprehensive context: datetime, user, environment, system state, battery - everything an AI needs to know about operating conditions")]
+    pub async fn get_context(
+        &self,
+        Parameters(_params): Parameters<EmptyParams>,
+    ) -> Result<CallToolResult, McpError> {
+        sensors::context::get_context().await
+    }
+
+    #[cfg(feature = "sensors")]
+    #[rmcp::tool(description = "Get all connected peripherals: displays, USB devices, cameras, microphones, bluetooth - everything plugged in")]
+    pub async fn get_peripherals(
+        &self,
+        Parameters(_params): Parameters<EmptyParams>,
+    ) -> Result<CallToolResult, McpError> {
+        sensors::peripherals::get_peripherals().await
+    }
+
     #[cfg(feature = "sensors")]
     #[rmcp::tool(description = "Get system overview: CPU usage, memory, disk space, uptime")]
     pub async fn get_system_info(
@@ -244,6 +263,33 @@ impl PresenceServer {
     }
 
     #[cfg(feature = "sensors")]
+    #[rmcp::tool(description = "Check if the system has internet connectivity (TCP connect to 1.1.1.1:53)")]
+    pub async fn is_online(
+        &self,
+        Parameters(_params): Parameters<EmptyParams>,
+    ) -> Result<CallToolResult, McpError> {
+        sensors::network::is_online().await
+    }
+
+    #[cfg(feature = "sensors")]
+    #[rmcp::tool(description = "Resolve a hostname to IP addresses via DNS")]
+    pub async fn dns_lookup(
+        &self,
+        Parameters(params): Parameters<sensors::network::DnsLookupParams>,
+    ) -> Result<CallToolResult, McpError> {
+        sensors::network::dns_lookup(params).await
+    }
+
+    #[cfg(feature = "sensors")]
+    #[rmcp::tool(description = "Get comprehensive network status: online check, public IP, location, interfaces, and traffic stats - all in one call")]
+    pub async fn get_network_info(
+        &self,
+        Parameters(_params): Parameters<EmptyParams>,
+    ) -> Result<CallToolResult, McpError> {
+        sensors::network::get_network_info().await
+    }
+
+    #[cfg(feature = "sensors")]
     #[rmcp::tool(description = "List all connected USB devices with vendor/product info")]
     pub async fn get_usb_devices(
         &self,
@@ -340,6 +386,15 @@ impl PresenceServer {
         Parameters(params): Parameters<sensors::git::RepoPathParams>,
     ) -> Result<CallToolResult, McpError> {
         sensors::git::get_diff_summary(params).await
+    }
+
+    #[cfg(feature = "sensors")]
+    #[rmcp::tool(description = "Get comprehensive git info: branch, tracking, last commit, working tree status, remotes, stash count - all in one call")]
+    pub async fn get_git_info(
+        &self,
+        Parameters(params): Parameters<sensors::git::RepoPathParams>,
+    ) -> Result<CallToolResult, McpError> {
+        sensors::git::get_git_info(params).await
     }
 
     #[cfg(feature = "sensors")]
@@ -1150,6 +1205,13 @@ impl PresenceServer {
     #[rmcp::tool(description = "Get all power capabilities at once")]
     pub async fn get_capabilities(&self, Parameters(_params): Parameters<EmptyParams>) -> Result<CallToolResult, McpError> {
         linux::logind::get_capabilities().await
+    }
+
+    // --- audio_status (1 tool) ---
+    #[cfg(all(feature = "linux", target_os = "linux"))]
+    #[rmcp::tool(description = "Get comprehensive audio status: volume, mute, default devices, now playing, apps using audio - all in one call")]
+    pub async fn get_audio_status(&self, Parameters(_params): Parameters<EmptyParams>) -> Result<CallToolResult, McpError> {
+        linux::audio_status::get_audio_status().await
     }
 
     // --- pulseaudio (11 tools) ---

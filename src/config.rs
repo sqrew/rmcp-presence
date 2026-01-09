@@ -105,6 +105,8 @@ pub fn all_tool_names() -> Vec<&'static str> {
     #[cfg(feature = "sensors")]
     {
         tools.extend([
+            "get_context",
+            "get_peripherals",
             "get_system_info",
             "get_top_processes",
             "find_process",
@@ -120,6 +122,9 @@ pub fn all_tool_names() -> Vec<&'static str> {
             "is_idle_for",
             "get_interfaces",
             "get_public_ip",
+            "is_online",
+            "dns_lookup",
+            "get_network_info",
             "get_usb_devices",
             "get_battery_status",
             "scan_ble_devices",

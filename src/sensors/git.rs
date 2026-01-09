@@ -326,6 +326,223 @@ pub async fn get_stash_list(params: RepoPathParams) -> Result<CallToolResult, Mc
     Ok(CallToolResult::success(vec![Content::text(result)]))
 }
 
+// === Composite: get_git_info ===
+
+#[derive(Debug, serde::Serialize)]
+pub struct GitInfo {
+    pub repository: String,
+    pub branch: BranchInfo,
+    pub last_commit: Option<CommitInfo>,
+    pub working_tree: WorkingTreeInfo,
+    pub remotes: Vec<RemoteInfo>,
+    pub stash_count: usize,
+}
+
+#[derive(Debug, serde::Serialize)]
+pub struct BranchInfo {
+    pub name: String,
+    pub is_detached: bool,
+    pub tracking: Option<String>,
+    pub ahead: Option<usize>,
+    pub behind: Option<usize>,
+}
+
+#[derive(Debug, serde::Serialize)]
+pub struct CommitInfo {
+    pub hash: String,
+    pub author: String,
+    pub message: String,
+    pub time: String,
+}
+
+#[derive(Debug, serde::Serialize)]
+pub struct WorkingTreeInfo {
+    pub clean: bool,
+    pub staged: usize,
+    pub modified: usize,
+    pub untracked: usize,
+}
+
+#[derive(Debug, serde::Serialize)]
+pub struct RemoteInfo {
+    pub name: String,
+    pub url: String,
+}
+
+pub async fn get_git_info(params: RepoPathParams) -> Result<CallToolResult, McpError> {
+    let repo = get_repo(params.path)?;
+
+    // Repository path
+    let repository = repo
+        .workdir()
+        .map(|p| p.display().to_string())
+        .unwrap_or_else(|| "(bare)".to_string());
+
+    // Branch info
+    let branch = build_branch_info(&repo);
+
+    // Last commit
+    let last_commit = build_last_commit(&repo);
+
+    // Working tree status
+    let working_tree = build_working_tree(&repo);
+
+    // Remotes
+    let remotes = build_remotes(&repo);
+
+    // Stash count
+    let stash_count = count_stashes(&repo);
+
+    let info = GitInfo {
+        repository,
+        branch,
+        last_commit,
+        working_tree,
+        remotes,
+        stash_count,
+    };
+
+    let json = serde_json::to_string_pretty(&info)
+        .map_err(|e| internal_error(format!("Serialization error: {}", e)))?;
+
+    Ok(CallToolResult::success(vec![Content::text(json)]))
+}
+
+fn build_branch_info(repo: &Repository) -> BranchInfo {
+    let is_detached = repo.head_detached().unwrap_or(false);
+
+    let (name, tracking, ahead, behind) = match repo.head() {
+        Ok(head) => {
+            let name = head.shorthand().unwrap_or("(unknown)").to_string();
+
+            // Try to get tracking info
+            let (tracking, ahead, behind) = if !is_detached {
+                if let Ok(branch) = repo.find_branch(&name, BranchType::Local) {
+                    if let Ok(upstream) = branch.upstream() {
+                        let tracking_name = upstream.name().ok().flatten().map(String::from);
+
+                        // Get ahead/behind counts
+                        let (ahead, behind) = if let (Ok(local_oid), Ok(upstream_oid)) =
+                            (head.target().ok_or(()), upstream.get().target().ok_or(()))
+                        {
+                            repo.graph_ahead_behind(local_oid, upstream_oid).ok()
+                                .map(|(a, b)| (Some(a), Some(b)))
+                                .unwrap_or((None, None))
+                        } else {
+                            (None, None)
+                        };
+
+                        (tracking_name, ahead, behind)
+                    } else {
+                        (None, None, None)
+                    }
+                } else {
+                    (None, None, None)
+                }
+            } else {
+                (None, None, None)
+            };
+
+            (name, tracking, ahead, behind)
+        }
+        Err(_) => ("(no commits)".to_string(), None, None, None),
+    };
+
+    BranchInfo {
+        name,
+        is_detached,
+        tracking,
+        ahead,
+        behind,
+    }
+}
+
+fn build_last_commit(repo: &Repository) -> Option<CommitInfo> {
+    let head = repo.head().ok()?;
+    let commit = head.peel_to_commit().ok()?;
+
+    let hash = commit.id().to_string()[..7].to_string();
+    let author = commit.author().name().unwrap_or("unknown").to_string();
+    let message = commit.summary().unwrap_or("(no message)").to_string();
+    let time = chrono::DateTime::from_timestamp(commit.time().seconds(), 0)
+        .map(|dt| dt.format("%Y-%m-%d %H:%M").to_string())
+        .unwrap_or_else(|| "unknown".to_string());
+
+    Some(CommitInfo {
+        hash,
+        author,
+        message,
+        time,
+    })
+}
+
+fn build_working_tree(repo: &Repository) -> WorkingTreeInfo {
+    let mut opts = StatusOptions::new();
+    opts.include_untracked(true);
+
+    let (staged, modified, untracked) = match repo.statuses(Some(&mut opts)) {
+        Ok(statuses) => {
+            let mut staged = 0;
+            let mut modified = 0;
+            let mut untracked = 0;
+
+            for entry in statuses.iter() {
+                let status = entry.status();
+                if status.is_index_new() || status.is_index_modified() || status.is_index_deleted() {
+                    staged += 1;
+                }
+                if status.is_wt_modified() || status.is_wt_deleted() {
+                    modified += 1;
+                }
+                if status.is_wt_new() {
+                    untracked += 1;
+                }
+            }
+
+            (staged, modified, untracked)
+        }
+        Err(_) => (0, 0, 0),
+    };
+
+    WorkingTreeInfo {
+        clean: staged == 0 && modified == 0 && untracked == 0,
+        staged,
+        modified,
+        untracked,
+    }
+}
+
+fn build_remotes(repo: &Repository) -> Vec<RemoteInfo> {
+    let Ok(remotes) = repo.remotes() else {
+        return vec![];
+    };
+
+    remotes
+        .iter()
+        .flatten()
+        .filter_map(|name| {
+            let remote = repo.find_remote(name).ok()?;
+            let url = remote.url()?.to_string();
+            Some(RemoteInfo {
+                name: name.to_string(),
+                url,
+            })
+        })
+        .collect()
+}
+
+fn count_stashes(repo: &Repository) -> usize {
+    // stash_foreach requires mutable repo, so we clone
+    let mut count = 0;
+    if let Ok(mut repo) = Repository::open(repo.path()) {
+        let _ = repo.stash_foreach(|_, _, _| {
+            count += 1;
+            true
+        });
+    }
+    count
+}
+
 pub async fn get_diff_summary(params: RepoPathParams) -> Result<CallToolResult, McpError> {
     let repo = get_repo(params.path)?;
     let mut result = String::from("Diff Summary:\n\n");

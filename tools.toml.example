@@ -9,7 +9,10 @@
 
 disabled = []
 
-# === SENSORS (29 tools) ===
+# === SENSORS (35 tools) ===
+# get_context
+# get_peripherals
+# get_network_info
 # get_system_info
 # get_top_processes
 # find_process
@@ -25,6 +28,8 @@ disabled = []
 # is_idle_for
 # get_interfaces
 # get_public_ip
+# is_online
+# dns_lookup
 # get_usb_devices
 # get_battery_status
 # scan_ble_devices
@@ -36,6 +41,7 @@ disabled = []
 # get_tags
 # get_stash_list
 # get_diff_summary
+# get_git_info
 # get_users
 # get_weather
 # get_forecast
@@ -167,6 +173,9 @@ disabled = []
 # can_poweroff
 # can_reboot
 # get_capabilities
+
+# === LINUX: audio_status (1 tool) ===
+# get_audio_status
 
 # === LINUX: pulseaudio (11 tools) ===
 # list_sinks
