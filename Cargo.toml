@@ -1,8 +1,8 @@
 [package]
 name = "rmcp-presence"
-version = "0.1.0"
+version = "0.2.0"
 edition = "2021"
-description = "Unified MCP server for AI environmental awareness - 141 tools in one binary"
+description = "Unified MCP server for AI environmental awareness - 160 tools, 8 composites, lean defaults"
 license = "MIT"
 repository = "https://github.com/sqrew/rmcp-presence"
 keywords = ["mcp", "ai", "presence", "sensors", "rmcp"]
