@@ -179,6 +179,7 @@ pub fn all_tool_names() -> Vec<&'static str> {
             "show_model",
             "pull_model",
             "delete_model",
+            "get_ollama_status",
             "set_reminder",
             "list_reminders",
             "remove_reminder",

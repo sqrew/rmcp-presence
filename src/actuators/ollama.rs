@@ -1,6 +1,5 @@
 //! Ollama local LLM management actuators
 
-use crate::shared::internal_error;
 use rmcp::{model::*, ErrorData as McpError};
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
@@ -331,4 +330,115 @@ pub async fn delete_model(params: ModelParams) -> Result<CallToolResult, McpErro
             response.status()
         ))]))
     }
+}
+
+// === Composite Types ===
+
+#[derive(Debug, Serialize)]
+pub struct OllamaStatus {
+    pub online: bool,
+    pub host: String,
+    pub installed_models: Vec<InstalledModel>,
+    pub running_models: Vec<LoadedModel>,
+    pub installed_count: usize,
+    pub running_count: usize,
+}
+
+#[derive(Debug, Serialize)]
+pub struct InstalledModel {
+    pub name: String,
+    pub size: String,
+}
+
+#[derive(Debug, Serialize)]
+pub struct LoadedModel {
+    pub name: String,
+    pub size: String,
+    pub vram: Option<String>,
+}
+
+// === Composite Function ===
+
+pub async fn get_ollama_status(params: HostParams) -> Result<CallToolResult, McpError> {
+    let client = match get_client().await {
+        Ok(c) => c,
+        Err(_) => {
+            let status = OllamaStatus {
+                online: false,
+                host: get_host(params.host.as_deref()),
+                installed_models: vec![],
+                running_models: vec![],
+                installed_count: 0,
+                running_count: 0,
+            };
+            return Ok(CallToolResult::success(vec![Content::text(
+                serde_json::to_string_pretty(&status).unwrap_or_else(|e| format!("{{\"error\": \"{}\"}}", e)),
+            )]));
+        }
+    };
+
+    let host = get_host(params.host.as_deref());
+
+    // Check if Ollama is reachable and get installed models
+    let tags_url = format!("{}/api/tags", host);
+    let installed_models = match client.get(&tags_url).send().await {
+        Ok(response) if response.status().is_success() => {
+            match response.json::<TagsResponse>().await {
+                Ok(tags) => tags.models.unwrap_or_default()
+                    .into_iter()
+                    .map(|m| InstalledModel {
+                        name: m.name,
+                        size: m.size.map(format_size).unwrap_or_else(|| "?".into()),
+                    })
+                    .collect(),
+                Err(_) => vec![],
+            }
+        }
+        _ => {
+            // Ollama not reachable
+            let status = OllamaStatus {
+                online: false,
+                host,
+                installed_models: vec![],
+                running_models: vec![],
+                installed_count: 0,
+                running_count: 0,
+            };
+            return Ok(CallToolResult::success(vec![Content::text(
+                serde_json::to_string_pretty(&status).unwrap_or_else(|e| format!("{{\"error\": \"{}\"}}", e)),
+            )]));
+        }
+    };
+
+    // Get running models
+    let ps_url = format!("{}/api/ps", host);
+    let running_models: Vec<LoadedModel> = match client.get(&ps_url).send().await {
+        Ok(response) if response.status().is_success() => {
+            match response.json::<PsResponse>().await {
+                Ok(ps) => ps.models.unwrap_or_default()
+                    .into_iter()
+                    .map(|m| LoadedModel {
+                        name: m.name,
+                        size: m.size.map(format_size).unwrap_or_else(|| "?".into()),
+                        vram: m.size_vram.map(format_size),
+                    })
+                    .collect(),
+                Err(_) => vec![],
+            }
+        }
+        _ => vec![],
+    };
+
+    let status = OllamaStatus {
+        online: true,
+        host,
+        installed_count: installed_models.len(),
+        running_count: running_models.len(),
+        installed_models,
+        running_models,
+    };
+
+    Ok(CallToolResult::success(vec![Content::text(
+        serde_json::to_string_pretty(&status).unwrap_or_else(|e| format!("{{\"error\": \"{}\"}}", e)),
+    )]))
 }

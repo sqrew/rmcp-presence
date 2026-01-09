@@ -720,6 +720,15 @@ impl PresenceServer {
         actuators::ollama::delete_model(params).await
     }
 
+    #[cfg(feature = "actuators")]
+    #[rmcp::tool(description = "Get Ollama status: online check, installed models, running models with VRAM - all in one call")]
+    pub async fn get_ollama_status(
+        &self,
+        Parameters(params): Parameters<actuators::ollama::HostParams>,
+    ) -> Result<CallToolResult, McpError> {
+        actuators::ollama::get_ollama_status(params).await
+    }
+
     // --- breakrs (6 tools) ---
     #[cfg(feature = "actuators")]
     #[rmcp::tool(description = "Set a reminder/notification with natural language duration and message (e.g. '5m get coffee', '1h meeting', '30s tea ready')")]

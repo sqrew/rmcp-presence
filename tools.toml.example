@@ -14,6 +14,7 @@
 #   get_git_info      - branch, commit, working tree, remotes, stash
 #   get_workspace_status - i3 workspaces, focused window, outputs
 #   get_bluetooth_status - adapter, paired devices, connections
+#   get_ollama_status - online check, installed models, running models
 
 disabled = [
     # === SENSORS (35 tools) ===
@@ -81,11 +82,12 @@ disabled = [
     # "get_microphone_info",   # specific device detail
     # "capture_audio",         # action - keep enabled
     # "get_input_level",
-    # "list_models",
-    # "list_running",
-    # "show_model",
-    # "pull_model",
-    # "delete_model",
+    "list_models",             # covered by get_ollama_status
+    "list_running",            # covered by get_ollama_status
+    # "show_model",            # specific model detail
+    # "pull_model",            # action - keep enabled
+    # "delete_model",          # action - keep enabled
+    # "get_ollama_status",     # COMPOSITE - keep enabled
     # "set_reminder",
     # "list_reminders",
     # "remove_reminder",
