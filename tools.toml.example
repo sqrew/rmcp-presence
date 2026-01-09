@@ -1,193 +1,191 @@
 # rmcp-presence tool configuration
-# Add tool names to 'disabled' list to hide them from MCP clients
 #
-# Example:
-#   disabled = ["capture_audio", "poweroff", "reboot"]
+# To disable a tool: uncomment its line (remove the #)
+# To enable a tool: comment its line (add #) or delete it
 #
-# All available tools are listed below (commented) for reference.
-# Copy names to the disabled list above to disable them.
+# All tools are enabled by default. Only uncommented entries are disabled.
 
-disabled = []
+disabled = [
+    # === SENSORS (35 tools) ===
+    # "get_context",
+    # "get_peripherals",
+    # "get_network_info",
+    # "get_system_info",
+    # "get_top_processes",
+    # "find_process",
+    # "get_process_details",
+    # "list_processes",
+    # "get_network_stats",
+    # "get_component_temps",
+    # "get_disk_info",
+    # "get_display_info",
+    # "get_display_by_name",
+    # "get_display_at_point",
+    # "get_idle_time",
+    # "is_idle_for",
+    # "get_interfaces",
+    # "get_public_ip",
+    # "is_online",
+    # "dns_lookup",
+    # "get_usb_devices",
+    # "get_battery_status",
+    # "scan_ble_devices",
+    # "get_status",
+    # "get_log",
+    # "get_branches",
+    # "get_current_branch",
+    # "get_remotes",
+    # "get_tags",
+    # "get_stash_list",
+    # "get_diff_summary",
+    # "get_git_info",
+    # "get_users",
+    # "get_weather",
+    # "get_forecast",
 
-# === SENSORS (35 tools) ===
-# get_context
-# get_peripherals
-# get_network_info
-# get_system_info
-# get_top_processes
-# find_process
-# get_process_details
-# list_processes
-# get_network_stats
-# get_component_temps
-# get_disk_info
-# get_display_info
-# get_display_by_name
-# get_display_at_point
-# get_idle_time
-# is_idle_for
-# get_interfaces
-# get_public_ip
-# is_online
-# dns_lookup
-# get_usb_devices
-# get_battery_status
-# scan_ble_devices
-# get_status
-# get_log
-# get_branches
-# get_current_branch
-# get_remotes
-# get_tags
-# get_stash_list
-# get_diff_summary
-# get_git_info
-# get_users
-# get_weather
-# get_forecast
+    # === ACTUATORS (38 tools) ===
+    # "read_clipboard",
+    # "write_clipboard",
+    # "clear_clipboard",
+    # "get_volume",
+    # "set_volume",
+    # "get_mute",
+    # "set_mute",
+    # "list_audio_devices",
+    # "trash_file",
+    # "trash_files",
+    # "list_trash",
+    # "restore_from_trash",
+    # "empty_trash",
+    # "open_path",
+    # "open_with",
+    # "list_monitors",
+    # "capture_monitor",
+    # "list_windows",
+    # "capture_window",
+    # "capture_region",
+    # "list_cameras",
+    # "capture_camera",
+    # "get_camera_info",
+    # "list_microphones",
+    # "get_microphone_info",
+    # "capture_audio",
+    # "get_input_level",
+    # "list_models",
+    # "list_running",
+    # "show_model",
+    # "pull_model",
+    # "delete_model",
+    # "set_reminder",
+    # "list_reminders",
+    # "remove_reminder",
+    # "clear_reminders",
+    # "daemon_status",
+    # "get_history",
 
-# === ACTUATORS (38 tools) ===
-# read_clipboard
-# write_clipboard
-# clear_clipboard
-# get_volume
-# set_volume
-# get_mute
-# set_mute
-# list_audio_devices
-# trash_file
-# trash_files
-# list_trash
-# restore_from_trash
-# empty_trash
-# open_path
-# open_with
-# list_monitors
-# capture_monitor
-# list_windows
-# capture_window
-# capture_region
-# list_cameras
-# capture_camera
-# get_camera_info
-# list_microphones
-# get_microphone_info
-# capture_audio
-# get_input_level
-# list_models
-# list_running
-# show_model
-# pull_model
-# delete_model
-# set_reminder
-# list_reminders
-# remove_reminder
-# clear_reminders
-# daemon_status
-# get_history
+    # === LINUX: i3 (16 tools) ===
+    # "get_workspaces",
+    # "get_tree",
+    # "switch_workspace",
+    # "focus_window",
+    # "move_to_workspace",
+    # "run_command",
+    # "exec",
+    # "kill",
+    # "kill_window",
+    # "fullscreen",
+    # "get_outputs",
+    # "get_marks",
+    # "get_binding_modes",
+    # "get_version",
+    # "get_scratchpad",
+    # "get_workspace_status",
 
-# === LINUX: i3 (16 tools) ===
-# get_workspaces
-# get_tree
-# switch_workspace
-# focus_window
-# move_to_workspace
-# run_command
-# exec
-# kill
-# kill_window
-# fullscreen
-# get_outputs
-# get_marks
-# get_binding_modes
-# get_version
-# get_scratchpad
-# get_workspace_status
+    # === LINUX: xdotool (12 tools) ===
+    # "move_mouse",
+    # "click",
+    # "click_at",
+    # "type_text",
+    # "key_press",
+    # "scroll",
+    # "get_mouse_position",
+    # "double_click",
+    # "search_window",
+    # "get_active_window",
+    # "get_window_geometry",
+    # "get_window_name",
 
-# === LINUX: xdotool (12 tools) ===
-# move_mouse
-# click
-# click_at
-# type_text
-# key_press
-# scroll
-# get_mouse_position
-# double_click
-# search_window
-# get_active_window
-# get_window_geometry
-# get_window_name
+    # === LINUX: mpris (10 tools) ===
+    # "list_players",
+    # "get_now_playing",
+    # "media_play",
+    # "media_pause",
+    # "media_play_pause",
+    # "media_stop",
+    # "media_next",
+    # "media_previous",
+    # "get_player_volume",
+    # "set_player_volume",
 
-# === LINUX: mpris (10 tools) ===
-# list_players
-# get_now_playing
-# media_play
-# media_pause
-# media_play_pause
-# media_stop
-# media_next
-# media_previous
-# get_player_volume
-# set_player_volume
+    # === LINUX: systemd (7 tools) ===
+    # "list_units",
+    # "get_unit_status",
+    # "start_unit",
+    # "stop_unit",
+    # "restart_unit",
+    # "list_failed_units",
+    # "get_unit_logs",
 
-# === LINUX: systemd (7 tools) ===
-# list_units
-# get_unit_status
-# start_unit
-# stop_unit
-# restart_unit
-# list_failed_units
-# get_unit_logs
+    # === LINUX: brightness (3 tools) ===
+    # "list_brightness_devices",
+    # "get_brightness",
+    # "set_brightness",
 
-# === LINUX: brightness (3 tools) ===
-# list_brightness_devices
-# get_brightness
-# set_brightness
+    # === LINUX: bluer (10 tools) ===
+    # "list_adapters",
+    # "get_adapter_info",
+    # "discover_devices",
+    # "list_known_devices",
+    # "get_device_info",
+    # "pair_device",
+    # "remove_device",
+    # "connect_device",
+    # "disconnect_device",
+    # "get_bluetooth_status",
 
-# === LINUX: bluer (10 tools) ===
-# list_adapters
-# get_adapter_info
-# discover_devices
-# list_known_devices
-# get_device_info
-# pair_device
-# remove_device
-# connect_device
-# disconnect_device
-# get_bluetooth_status
+    # === LINUX: dbus (5 tools) ===
+    # "list_names",
+    # "introspect",
+    # "call_method",
+    # "get_property",
+    # "set_property",
 
-# === LINUX: dbus (5 tools) ===
-# list_names
-# introspect
-# call_method
-# get_property
-# set_property
+    # === LINUX: logind (11 tools) ===
+    # "suspend",
+    # "hibernate",
+    # "poweroff",
+    # "reboot",
+    # "lock_session",
+    # "list_sessions",
+    # "can_suspend",
+    # "can_hibernate",
+    # "can_poweroff",
+    # "can_reboot",
+    # "get_capabilities",
 
-# === LINUX: logind (11 tools) ===
-# suspend
-# hibernate
-# poweroff
-# reboot
-# lock_session
-# list_sessions
-# can_suspend
-# can_hibernate
-# can_poweroff
-# can_reboot
-# get_capabilities
+    # === LINUX: audio_status (1 tool) ===
+    # "get_audio_status",
 
-# === LINUX: audio_status (1 tool) ===
-# get_audio_status
-
-# === LINUX: pulseaudio (11 tools) ===
-# list_sinks
-# list_sources
-# list_sink_inputs
-# list_source_outputs
-# get_default_sink
-# get_default_source
-# set_default_sink
-# set_default_source
-# set_sink_input_volume
-# set_sink_input_mute
-# move_sink_input
+    # === LINUX: pulseaudio (11 tools) ===
+    # "list_sinks",
+    # "list_sources",
+    # "list_sink_inputs",
+    # "list_source_outputs",
+    # "get_default_sink",
+    # "get_default_source",
+    # "set_default_sink",
+    # "set_default_source",
+    # "set_sink_input_volume",
+    # "set_sink_input_mute",
+    # "move_sink_input",
+]

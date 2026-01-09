@@ -136,6 +136,7 @@ pub fn all_tool_names() -> Vec<&'static str> {
             "get_tags",
             "get_stash_list",
             "get_diff_summary",
+            "get_git_info",
             "get_users",
             "get_weather",
             "get_forecast",
@@ -207,6 +208,7 @@ pub fn all_tool_names() -> Vec<&'static str> {
             "get_binding_modes",
             "get_version",
             "get_scratchpad",
+            "get_workspace_status",
             // xdotool
             "move_mouse",
             "click",
@@ -253,6 +255,7 @@ pub fn all_tool_names() -> Vec<&'static str> {
             "remove_device",
             "connect_device",
             "disconnect_device",
+            "get_bluetooth_status",
             // dbus
             "list_names",
             "introspect",
@@ -283,6 +286,8 @@ pub fn all_tool_names() -> Vec<&'static str> {
             "set_sink_input_volume",
             "set_sink_input_mute",
             "move_sink_input",
+            // audio composite
+            "get_audio_status",
         ]);
     }
 
