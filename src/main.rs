@@ -729,6 +729,91 @@ impl PresenceServer {
         actuators::ollama::get_ollama_status(params).await
     }
 
+    // --- printers (10 tools) ---
+    #[cfg(feature = "actuators")]
+    #[rmcp::tool(description = "List all available printers on the system")]
+    pub async fn list_printers(&self, Parameters(_params): Parameters<EmptyParams>) -> Result<CallToolResult, McpError> {
+        actuators::printers::list_printers().await
+    }
+
+    #[cfg(feature = "actuators")]
+    #[rmcp::tool(description = "Get detailed information about a specific printer")]
+    pub async fn get_printer_info(
+        &self,
+        Parameters(params): Parameters<actuators::printers::PrinterNameParams>,
+    ) -> Result<CallToolResult, McpError> {
+        actuators::printers::get_printer_info(params).await
+    }
+
+    #[cfg(feature = "actuators")]
+    #[rmcp::tool(description = "Get the system default printer")]
+    pub async fn get_default_printer(&self, Parameters(_params): Parameters<EmptyParams>) -> Result<CallToolResult, McpError> {
+        actuators::printers::get_default_printer_fn().await
+    }
+
+    #[cfg(feature = "actuators")]
+    #[rmcp::tool(description = "Print a file to a printer")]
+    pub async fn print_file(
+        &self,
+        Parameters(params): Parameters<actuators::printers::PrintFileParams>,
+    ) -> Result<CallToolResult, McpError> {
+        actuators::printers::print_file(params).await
+    }
+
+    #[cfg(feature = "actuators")]
+    #[rmcp::tool(description = "Print text content to a printer")]
+    pub async fn print_text(
+        &self,
+        Parameters(params): Parameters<actuators::printers::PrintTextParams>,
+    ) -> Result<CallToolResult, McpError> {
+        actuators::printers::print_text(params).await
+    }
+
+    #[cfg(feature = "actuators")]
+    #[rmcp::tool(description = "List active print jobs for a printer")]
+    pub async fn list_jobs(
+        &self,
+        Parameters(params): Parameters<actuators::printers::PrinterNameParams>,
+    ) -> Result<CallToolResult, McpError> {
+        actuators::printers::list_jobs(params).await
+    }
+
+    #[cfg(feature = "actuators")]
+    #[rmcp::tool(description = "Cancel a print job")]
+    pub async fn cancel_job(
+        &self,
+        Parameters(params): Parameters<actuators::printers::JobParams>,
+    ) -> Result<CallToolResult, McpError> {
+        actuators::printers::cancel_job(params).await
+    }
+
+    #[cfg(feature = "actuators")]
+    #[rmcp::tool(description = "Pause a print job")]
+    pub async fn pause_job(
+        &self,
+        Parameters(params): Parameters<actuators::printers::JobParams>,
+    ) -> Result<CallToolResult, McpError> {
+        actuators::printers::pause_job(params).await
+    }
+
+    #[cfg(feature = "actuators")]
+    #[rmcp::tool(description = "Resume a paused print job")]
+    pub async fn resume_job(
+        &self,
+        Parameters(params): Parameters<actuators::printers::JobParams>,
+    ) -> Result<CallToolResult, McpError> {
+        actuators::printers::resume_job(params).await
+    }
+
+    #[cfg(feature = "actuators")]
+    #[rmcp::tool(description = "Restart a print job")]
+    pub async fn restart_job(
+        &self,
+        Parameters(params): Parameters<actuators::printers::JobParams>,
+    ) -> Result<CallToolResult, McpError> {
+        actuators::printers::restart_job(params).await
+    }
+
     // --- breakrs (6 tools) ---
     #[cfg(feature = "actuators")]
     #[rmcp::tool(description = "Set a reminder/notification with natural language duration and message (e.g. '5m get coffee', '1h meeting', '30s tea ready')")]

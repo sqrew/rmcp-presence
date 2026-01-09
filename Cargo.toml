@@ -1,8 +1,8 @@
 [package]
 name = "rmcp-presence"
-version = "0.2.0"
+version = "0.3.0"
 edition = "2021"
-description = "Unified MCP server for AI environmental awareness - 160 tools, 8 composites, lean defaults"
+description = "Unified MCP server for AI environmental awareness - 170 tools, 8 composites, lean defaults"
 license = "MIT"
 repository = "https://github.com/sqrew/rmcp-presence"
 keywords = ["mcp", "ai", "presence", "sensors", "rmcp"]
@@ -37,6 +37,7 @@ actuators = [
     "dep:nokhwa",
     "dep:cpal",
     "dep:hound",
+    "dep:printers",
 ]
 
 linux = [
@@ -92,6 +93,7 @@ base64 = { version = "0.22", optional = true }
 nokhwa = { version = "0.10", features = ["input-native"], optional = true }
 cpal = { version = "0.15", optional = true }
 hound = { version = "3.5", optional = true }
+printers = { version = "2.2", optional = true }
 
 # Linux (feature-gated) - these are Linux-only crates
 tokio-i3ipc = { version = "0.16", optional = true }

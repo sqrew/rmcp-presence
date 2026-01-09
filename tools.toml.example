@@ -54,7 +54,7 @@ disabled = [
     # "get_weather",
     # "get_forecast",
 
-    # === ACTUATORS (38 tools) ===
+    # === ACTUATORS (48 tools) ===
     # "read_clipboard",
     # "write_clipboard",
     # "clear_clipboard",
@@ -94,6 +94,18 @@ disabled = [
     # "clear_reminders",
     # "daemon_status",
     # "get_history",
+
+    # === ACTUATORS: printers (10 tools) ===
+    # "list_printers",
+    # "get_printer_info",
+    # "get_default_printer",
+    # "print_file",            # action - keep enabled
+    # "print_text",            # action - keep enabled
+    # "list_jobs",
+    # "cancel_job",            # action - keep enabled
+    # "pause_job",             # action - keep enabled
+    # "resume_job",            # action - keep enabled
+    # "restart_job",           # action - keep enabled
 
     # === LINUX: i3 (16 tools) ===
     "get_workspaces",          # covered by get_workspace_status
