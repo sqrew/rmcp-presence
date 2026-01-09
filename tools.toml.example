@@ -1,44 +1,54 @@
 # rmcp-presence tool configuration
 #
+# LEAN DEFAULTS: Tools covered by composites are disabled to reduce context usage.
+# Each composite provides the same info as multiple individual tools in one call.
+#
 # To disable a tool: uncomment its line (remove the #)
 # To enable a tool: comment its line (add #) or delete it
 #
-# All tools are enabled by default. Only uncommented entries are disabled.
+# Composites (always enabled):
+#   get_context       - system state, datetime, user, battery, idle
+#   get_peripherals   - displays, USB, cameras, microphones, bluetooth
+#   get_network_info  - online status, public IP, interfaces, traffic
+#   get_audio_status  - volume, mute, devices, now playing, apps
+#   get_git_info      - branch, commit, working tree, remotes, stash
+#   get_workspace_status - i3 workspaces, focused window, outputs
+#   get_bluetooth_status - adapter, paired devices, connections
 
 disabled = [
     # === SENSORS (35 tools) ===
-    # "get_context",
-    # "get_peripherals",
-    # "get_network_info",
-    # "get_system_info",
+    # "get_context",           # COMPOSITE - keep enabled
+    # "get_peripherals",       # COMPOSITE - keep enabled
+    # "get_network_info",      # COMPOSITE - keep enabled
+    # "get_system_info",       # more detail than get_context
     # "get_top_processes",
     # "find_process",
     # "get_process_details",
     # "list_processes",
-    # "get_network_stats",
+    "get_network_stats",       # covered by get_network_info
     # "get_component_temps",
     # "get_disk_info",
-    # "get_display_info",
+    "get_display_info",        # covered by get_peripherals
     # "get_display_by_name",
     # "get_display_at_point",
-    # "get_idle_time",
-    # "is_idle_for",
-    # "get_interfaces",
-    # "get_public_ip",
-    # "is_online",
-    # "dns_lookup",
-    # "get_usb_devices",
-    # "get_battery_status",
-    # "scan_ble_devices",
-    # "get_status",
-    # "get_log",
-    # "get_branches",
-    # "get_current_branch",
-    # "get_remotes",
+    "get_idle_time",           # covered by get_context
+    # "is_idle_for",           # different - threshold check
+    "get_interfaces",          # covered by get_network_info
+    "get_public_ip",           # covered by get_network_info
+    "is_online",               # covered by get_network_info
+    # "dns_lookup",            # different function
+    "get_usb_devices",         # covered by get_peripherals
+    # "get_battery_status",    # more detail than get_context
+    # "scan_ble_devices",      # different - active scan
+    "get_status",              # covered by get_git_info
+    # "get_log",               # full history (composite only has last)
+    # "get_branches",          # full list
+    "get_current_branch",      # covered by get_git_info
+    "get_remotes",             # covered by get_git_info
     # "get_tags",
-    # "get_stash_list",
+    # "get_stash_list",        # full list (composite only has count)
     # "get_diff_summary",
-    # "get_git_info",
+    # "get_git_info",          # COMPOSITE - keep enabled
     # "get_users",
     # "get_weather",
     # "get_forecast",
@@ -47,10 +57,10 @@ disabled = [
     # "read_clipboard",
     # "write_clipboard",
     # "clear_clipboard",
-    # "get_volume",
-    # "set_volume",
-    # "get_mute",
-    # "set_mute",
+    "get_volume",              # covered by get_audio_status
+    # "set_volume",            # action - keep enabled
+    "get_mute",                # covered by get_audio_status
+    # "set_mute",              # action - keep enabled
     # "list_audio_devices",
     # "trash_file",
     # "trash_files",
@@ -64,12 +74,12 @@ disabled = [
     # "list_windows",
     # "capture_window",
     # "capture_region",
-    # "list_cameras",
-    # "capture_camera",
-    # "get_camera_info",
-    # "list_microphones",
-    # "get_microphone_info",
-    # "capture_audio",
+    "list_cameras",            # covered by get_peripherals
+    # "capture_camera",        # action - keep enabled
+    # "get_camera_info",       # specific device detail
+    "list_microphones",        # covered by get_peripherals
+    # "get_microphone_info",   # specific device detail
+    # "capture_audio",         # action - keep enabled
     # "get_input_level",
     # "list_models",
     # "list_running",
@@ -84,22 +94,22 @@ disabled = [
     # "get_history",
 
     # === LINUX: i3 (16 tools) ===
-    # "get_workspaces",
-    # "get_tree",
-    # "switch_workspace",
-    # "focus_window",
-    # "move_to_workspace",
-    # "run_command",
-    # "exec",
-    # "kill",
-    # "kill_window",
-    # "fullscreen",
-    # "get_outputs",
+    "get_workspaces",          # covered by get_workspace_status
+    # "get_tree",              # full tree (composite is summary)
+    # "switch_workspace",      # action - keep enabled
+    # "focus_window",          # action - keep enabled
+    # "move_to_workspace",     # action - keep enabled
+    # "run_command",           # action - keep enabled
+    # "exec",                  # action - keep enabled
+    # "kill",                  # action - keep enabled
+    # "kill_window",           # action - keep enabled
+    # "fullscreen",            # action - keep enabled
+    "get_outputs",             # covered by get_workspace_status
     # "get_marks",
     # "get_binding_modes",
     # "get_version",
-    # "get_scratchpad",
-    # "get_workspace_status",
+    # "get_scratchpad",        # full list (composite only has count)
+    # "get_workspace_status",  # COMPOSITE - keep enabled
 
     # === LINUX: xdotool (12 tools) ===
     # "move_mouse",
@@ -116,16 +126,16 @@ disabled = [
     # "get_window_name",
 
     # === LINUX: mpris (10 tools) ===
-    # "list_players",
-    # "get_now_playing",
-    # "media_play",
-    # "media_pause",
-    # "media_play_pause",
-    # "media_stop",
-    # "media_next",
-    # "media_previous",
+    "list_players",            # covered by get_audio_status
+    "get_now_playing",         # covered by get_audio_status
+    # "media_play",            # action - keep enabled
+    # "media_pause",           # action - keep enabled
+    # "media_play_pause",      # action - keep enabled
+    # "media_stop",            # action - keep enabled
+    # "media_next",            # action - keep enabled
+    # "media_previous",        # action - keep enabled
     # "get_player_volume",
-    # "set_player_volume",
+    # "set_player_volume",     # action - keep enabled
 
     # === LINUX: systemd (7 tools) ===
     # "list_units",
@@ -142,16 +152,16 @@ disabled = [
     # "set_brightness",
 
     # === LINUX: bluer (10 tools) ===
-    # "list_adapters",
-    # "get_adapter_info",
-    # "discover_devices",
-    # "list_known_devices",
-    # "get_device_info",
-    # "pair_device",
-    # "remove_device",
-    # "connect_device",
-    # "disconnect_device",
-    # "get_bluetooth_status",
+    # "list_adapters",         # multi-adapter scenarios
+    "get_adapter_info",        # covered by get_bluetooth_status
+    # "discover_devices",      # action - active scan
+    "list_known_devices",      # covered by get_bluetooth_status
+    # "get_device_info",       # specific device detail
+    # "pair_device",           # action - keep enabled
+    # "remove_device",         # action - keep enabled
+    # "connect_device",        # action - keep enabled
+    # "disconnect_device",     # action - keep enabled
+    # "get_bluetooth_status",  # COMPOSITE - keep enabled
 
     # === LINUX: dbus (5 tools) ===
     # "list_names",
@@ -173,19 +183,19 @@ disabled = [
     # "can_reboot",
     # "get_capabilities",
 
-    # === LINUX: audio_status (1 tool) ===
-    # "get_audio_status",
+    # === LINUX: audio composite (1 tool) ===
+    # "get_audio_status",      # COMPOSITE - keep enabled
 
     # === LINUX: pulseaudio (11 tools) ===
-    # "list_sinks",
+    "list_sinks",              # covered by get_audio_status
     # "list_sources",
-    # "list_sink_inputs",
+    "list_sink_inputs",        # covered by get_audio_status
     # "list_source_outputs",
-    # "get_default_sink",
-    # "get_default_source",
-    # "set_default_sink",
-    # "set_default_source",
-    # "set_sink_input_volume",
-    # "set_sink_input_mute",
-    # "move_sink_input",
+    "get_default_sink",        # covered by get_audio_status
+    "get_default_source",      # covered by get_audio_status
+    # "set_default_sink",      # action - keep enabled
+    # "set_default_source",    # action - keep enabled
+    # "set_sink_input_volume", # action - keep enabled
+    # "set_sink_input_mute",   # action - keep enabled
+    # "move_sink_input",       # action - keep enabled
 ]
